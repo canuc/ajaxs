@@ -225,22 +225,22 @@ AJAXs.prototype.requestFullBodyRead = function( req, res ) {
 	if ( parsedJSONBody && util.isArray(parsedJSONBody.args) ) {
 		var timeoutTimerTime = DEFAULT_TIMEOUT;
 		var argsArray = [];
-		if ( 'needRequest' in req.apiObject ) {
+		
+		if ( 'needRequest' in req.apiObject.api && req.apiObject.api.needRequest ) {
 			argsArray.push(req);
 		}
 
-		if ( 'timeout' in req.apiObject && typeof req.apiObject['timeout'] === 'number' ) {
+		if ( 'timeout' in req.apiObject.api && typeof req.apiObject.api === 'number' ) {
 			timeoutTimerTime = req.apiObject['timeout'];
 		}
 		
 		argsArray = argsArray.concat(parsedJSONBody.args);
 
-		
 		argsArray.push(replyClosureFunction);
 		timeoutInterval = setTimeout(timeoutOccured,timeoutTimerTime);
 
 		try {
-			req.apiFunc.apply( req.apiObject, argsArray);
+			req.apiFunc.apply( req.apiObject.api, argsArray);
 
 			if (!parsedJSONBody.hasCb)  {
 				clearTimeout(timeoutInterval);

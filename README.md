@@ -66,3 +66,13 @@ Next in your client html you simply include the script refered to by /api/{{your
 ```
 
 The client side depends on jquery so you must include html before you include the your api.
+
+# Additions
+
+## Need the request object?
+
+If you define the static property `needRequest` as true on the API object then the request will be passed through as the first parameter. This is useful if you have a cookie parser middleware running before ajaxs. For example check ajaxsimplewithreq.
+
+## Need more time ?
+
+There is a default timeout of 30 seconds before the server will respond with a 500 error, if you set `timeout` as a Numeric property on the API object ( in milli-seconds )  then you will be granted more time. Please check ajaxsimplewithreq.
