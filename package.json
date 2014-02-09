@@ -5,7 +5,7 @@
   	},
 	"name"  : "ajaxs",
 	"description" : "Express middleware that will simplify ajax calls, based on zerver.",
-	"version":"0.1.2",
+	"version":"0.1.3",
 	"license":"MIT",
 	"engines" : {
 		"node":">=0.8"
