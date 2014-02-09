@@ -243,6 +243,7 @@ AJAXs.prototype.requestFullBodyRead = function( req, res ) {
 			req.apiFunc.apply( req.apiObject.api, argsArray);
 
 			if (!parsedJSONBody.hasCb)  {
+				timeoutHit = true;
 				clearTimeout(timeoutInterval);
 				res.send(200);
 			}
