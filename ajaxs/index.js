@@ -193,6 +193,8 @@ AJAXs.prototype.requestFullBodyRead = function( req, res ) {
 		if ( timeoutHit ) {
 			return;
 		}
+		
+		timeoutHit = true;
 
 		if ( timeoutInterval ) {
 			clearTimeout( timeoutInterval );
