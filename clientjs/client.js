@@ -26,7 +26,8 @@
 			url: requestUrl,
 			data: JSON.stringify(dataObj),
 			timeout: API_TIMEOUT,
-			type: 'POST'
+			type: 'POST',
+			contentType: 'application/json'
 		}).done( successAjaxCallback );
 	}
 

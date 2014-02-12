@@ -95,7 +95,10 @@ function getAllApis( apiDir ) {
 /**
  * Asynchronous call to read the raw body from the request that we have deemed,
  * as an API request.
-
+ *
+ * NOTE: This function implements a workaround if the middleware is placed 
+ * after the body parser in the connect stack.
+ * 
  * @internal
  * @param { object } req an expressjs http request object.
  * @param { object } res an expressjs http response object.
@@ -103,16 +106,22 @@ function getAllApis( apiDir ) {
  * @param { object } callback scopt 
  */
 function readRawBody(req,res,rawBodyCallback,callbackScope) {
-	req.rawBody = '';
-  	req.setEncoding('utf8');
 
-  	req.on('data', function(chunk) { 
-    	req.rawBody += chunk;
-  	});
+	if ( typeof req._body !== 'undefined' && req._body ) { 
+		rawBodyCallback.call(callbackScope,req,res);
+	} else {
+		req.rawBody = '';
+	  	req.setEncoding('utf8');
 
-  	req.on('end', function() {
-    	rawBodyCallback.call(callbackScope,req,res);
-  	});
+	  	req.on('data', function(chunk) { 
+	    	req.rawBody += chunk;
+	  	});
+
+	  	req.on('end', function() {
+	    	rawBodyCallback.call(callbackScope,req,res);
+	  	});
+	}
+	
 }
 
 
@@ -217,7 +226,7 @@ AJAXs.prototype.requestFullBodyRead = function( req, res ) {
 	var parsedJSONBody = null;
 
 	try {
-		parsedJSONBody = JSON.parse(req.rawBody);
+		parsedJSONBody = req.rawBody ? JSON.parse(req.rawBody) : req.body ;
 	} 
 	catch ( jsonParseException ) {
 		res.send(400);
