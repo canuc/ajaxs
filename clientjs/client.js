@@ -22,7 +22,7 @@
 		dataObj.args  = data;
 		dataObj.hasCb = callback !== null;
 
-		$.ajax({
+		return $.ajax({
 			url: requestUrl,
 			data: JSON.stringify(dataObj),
 			timeout: API_TIMEOUT,
@@ -52,7 +52,7 @@
 		window[API_NAME][apiMethod] = function () {
 			var argumentList = copyArgumentsArray(arguments);
 			var mutatedArgs = getCallbackFromArgs(argumentList);
-			sendAjaxCall( apiMethod, mutatedArgs.args, mutatedArgs.callback );
+			return sendAjaxCall( apiMethod, mutatedArgs.args, mutatedArgs.callback );
 		};
 	}
 
