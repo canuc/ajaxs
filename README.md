@@ -64,7 +64,6 @@ Next in your client html you simply include the script refered to by /api/{{your
 	</script>
 </html>
 ```
-
 The client side depends on jquery so you must include html before you include the your api.
 
 # Additions
@@ -75,4 +74,8 @@ If you define the static property `needRequest` as true on the API object then t
 
 ## Need more time ?
 
-There is a default timeout of 30 seconds before the server will respond with a 500 error, if you set `timeout` as a Numeric property on the API object ( in milli-seconds )  then you will be granted more time. Please check ajaxsimplewithreq.
+There is a default timeout of 30 seconds before the server will respond with a 500 error, if you set `timeout` as a Numeric property on the API object ( in milli-seconds )  then you will be granted more time. Please check ajaxsimplewithreq. If you set timeout to be -1 than your request will not timeout.
+
+## Enforce api method Arity
+
+if you set `enforceArity` on the module then the api will require you to provide the correct number of paramters ( This is a lot safer and wont result in mismatched params ).

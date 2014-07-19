@@ -14,3 +14,9 @@ exports.needRequest = true;
 // you to increase the timeout
 //
 exports.timeout = 100 * 1000;
+
+//
+// Enforce the number of arguments accepted, if it does 
+// not match than an error will be dispatched in the response.
+//
+exports.enforceArity = true;

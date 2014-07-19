@@ -236,32 +236,48 @@ AJAXs.prototype.requestFullBodyRead = function( req, res ) {
 	if ( parsedJSONBody && util.isArray(parsedJSONBody.args) ) {
 		var timeoutTimerTime = DEFAULT_TIMEOUT;
 		var argsArray = [];
-		
+		var argsLength = parsedJSONBody.args.length + 1;
+
 		if ( 'needRequest' in req.apiObject.api && req.apiObject.api.needRequest ) {
 			argsArray.push(req);
+			argsLength++;
 		}
 
 		if ( 'timeout' in req.apiObject.api && typeof req.apiObject.api === 'number' ) {
 			timeoutTimerTime = req.apiObject['timeout'];
+
+		}
+
+		if ( 'enforceArity' in req.apiObject.api && req.apiObject.api.enforceAirity ) {
+			var requiredArity = req.apiFunc.length;
+			
+			if ( argsLength != requiredArity ) { 
+				res.send( 400 );
+				console.log( "Request did not provide the correct number of arguments. Provided: " , argsLength, " requested: ", requiredAirity);
+				return;
+			}
 		}
 		
 		argsArray = argsArray.concat(parsedJSONBody.args);
-
 		argsArray.push(replyClosureFunction);
-		timeoutInterval = setTimeout(timeoutOccured,timeoutTimerTime);
+
+		if ( timeoutTimerTime  != -1 ) {
+			timeoutInterval = setTimeout(timeoutOccured,timeoutTimerTime);
+		}
 
 		try {
 			req.apiFunc.apply( req.apiObject.api, argsArray);
 
 			if (!parsedJSONBody.hasCb)  {
 				timeoutHit = true;
-				clearTimeout(timeoutInterval);
+				timeoutTimerTime != -1 && clearTimeout(timeoutInterval);
 				res.send(200);
 			}
+
 		} catch (e) {
 			console.error(e);
 			console.error(e.stack);
-			clearTimeout(timeoutInterval);
+			timeoutTimerTime != -1 && clearTimeout(timeoutInterval);
 			res.send(500)
 		}
 	}
