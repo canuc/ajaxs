@@ -5,12 +5,16 @@ var util 	= require('util');
 
 const DEFAULT_API_DIRECTORY = 'ajaxs';
 const SCRIPT_LOCATION       = '../clientjs/client.js';
+const SERVICE_SCRIPT_LOCATION = '../clientjs/service-factory.js';
 const DEFAULT_TIMEOUT 		= 30 * 1000;
 const TEMPLATE_LOCATION     = path.resolve(__dirname,SCRIPT_LOCATION);
+const TEMPLATE_SERVICE_LOCATION = path.resolve(__dirname,SERVICE_SCRIPT_LOCATION);
+const SERVICE_QUALIFIER     = "service";
 
 var cacheAPIs  = {};
-console.log(TEMPLATE_LOCATION);
+
 var RegularCacheClient = fs.readFileSync(TEMPLATE_LOCATION,'utf8');
+var ServiceCacheClient = fs.readFileSync(TEMPLATE_SERVICE_LOCATION,'utf8');
 
 function getAbsolutePath( file ) {
 	return path.resolve( process.cwd(), file);
@@ -28,10 +32,17 @@ function getExtensionlessFilename( filename ) {
  * Synchronously create a template
  */
 function templateWithArgs( apiDir, apiName, apiFuncName ) {
-	cacheAPIs[apiName] = RegularCacheClient
-			.replace('%%api.root%%',apiDir)
-			.replace('%%api.name%%',apiName)
-			.replace('%%api.funcs%%',JSON.stringify(apiFuncName));	
+	cacheAPIs[apiName] = { 
+		reg: (RegularCacheClient
+			.replace(/%%api.root%%/g,apiDir)
+			.replace(/%%api.name%%/g,apiName)
+			.replace(/%%api.funcs%%/g,JSON.stringify(apiFuncName))),
+		service: (ServiceCacheClient
+			.replace(/%%api.root%%/g,apiDir)
+			.replace(/%%api.name%%/g,apiName)
+			.replace(/%%api.funcs%%/g,JSON.stringify(apiFuncName)))
+	}
+
 }
 
 /**
@@ -124,9 +135,13 @@ function readRawBody(req,res,rawBodyCallback,callbackScope) {
 	
 }
 
+function endsWith(str,suffix) {
+	return str.toLowerCase().indexOf(suffix, str.length - suffix.length) !== -1;
+}
+
 
 /**
- * AJAXs Object is initialized wiht a directory, in which to pull files.
+ * AJAXs Object is initialized whit a directory, in which to pull files.
  * 
  * @param { string } apiDir The relative api directory. If unset will defauls to 'ajaxs'
  */
@@ -156,10 +171,17 @@ AJAXs.prototype.requestHandler = function( req, res, next) {
 	// then this will be the handler
 	if ( requestComponents.length >= 2 && requestComponents[0] === this.apiDir ) {
 		var apiObjectSpecifier = getExtensionlessFilename(requestComponents[1]);
-		
+		var shouldRequestService = false;
+
+		if (endsWith(apiObjectSpecifier,SERVICE_QUALIFIER)) {
+			console.log( apiObjectSpecifier );
+			apiObjectSpecifier = apiObjectSpecifier.substr(0,apiObjectSpecifier.length - SERVICE_QUALIFIER.length);
+			shouldRequestService = true;
+		}
+
 		if ( apiObjectSpecifier in this.ajaxApis ) {
 			req.apiObject = this.ajaxApis[apiObjectSpecifier];
-		} 
+		}
 		else {
 			// This is not an API that we have preloaded so..
 			// you must be making a bad request
@@ -169,8 +191,11 @@ AJAXs.prototype.requestHandler = function( req, res, next) {
 
 		
 		if ( requestComponents.length === 2 ) { // We have been requested to get the api file
-			res.writeHead(200, {"Content-Type": "text/javascript"});
-			res.end(cacheAPIs[apiObjectSpecifier]);
+			res.writeHead( 200, {
+				"Content-Type": "text/javascript"
+			});
+			console.log(cacheAPIs[apiObjectSpecifier]);
+			res.end( shouldRequestService ? cacheAPIs[apiObjectSpecifier].service : cacheAPIs[apiObjectSpecifier].reg );
 		} 
 		else if (requestComponents.length === 3 )  {
 			if ( requestComponents[2] in req.apiObject.funcs ) {
@@ -245,7 +270,6 @@ AJAXs.prototype.requestFullBodyRead = function( req, res ) {
 
 		if ( 'timeout' in req.apiObject.api && typeof req.apiObject.api === 'number' ) {
 			timeoutTimerTime = req.apiObject['timeout'];
-
 		}
 
 		if ( 'enforceArity' in req.apiObject.api && req.apiObject.api.enforceAirity ) {
@@ -268,7 +292,7 @@ AJAXs.prototype.requestFullBodyRead = function( req, res ) {
 		try {
 			req.apiFunc.apply( req.apiObject.api, argsArray);
 
-			if (!parsedJSONBody.hasCb)  {
+			if (!parsedJSONBody.hasCb && !timeoutHit)  {
 				timeoutHit = true;
 				timeoutTimerTime != -1 && clearTimeout(timeoutInterval);
 				res.send(200);

@@ -66,6 +66,43 @@ Next in your client html you simply include the script refered to by /api/{{your
 ```
 The client side depends on jquery so you must include html before you include the your api.
 
+## Angular 
+
+Also Packaged in is an angular service generator. You can check out the ajaxsimplecall for an example:
+
+```html
+<html>
+	<head>
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script>
+		<!-- if you use the {apiname}Service as the script name it will download the angularjs client code --> 
+		<script src="/ajaxs/loggerService.js"></script>
+	</head>
+	<!-- Standard Application Initilization -->
+	<body ng-app="app">
+		<div id="main" ng-controller="MyController">
+		</div>
+		<script>
+			////////////////////// Use with Angular ////////////////////////////////
+
+			// 1. Create our application
+			var app = angular.module('app',[]);
+
+			// 2. Initialize the service with the angular application 
+			loggerService(app);
+
+			// 3. create a new controller that will require the logger as a dependancy
+			app.controller("MyController",function($scope, logger) { 
+				logger.log("Message #2 From Client").then(function() {
+					console.log("Message recieved by the server!!");
+				});
+			});
+
+		</script>
+	</body>
+	
+</html>
+```
+
 # Additions
 
 ## Need the request object?

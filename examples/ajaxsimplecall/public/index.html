@@ -1,11 +1,34 @@
 <html>
 	<head>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		<script src="/ajaxs/loggerService.js"></script>
 		<script src="/ajaxs/logger.js"></script>
 	</head>
-	<body>
+	<body ng-app="app">
+		<div id="main" ng-controller="MyController">
+		</div>
+		<script>
+			////////////////////// Regular Use      ////////////////////////////////
+			logger.log("Message #1 From Client!");
+
+			////////////////////// Use with Angular ////////////////////////////////
+
+			// 1. Create our application
+			var app = angular.module('app',[]);
+
+			// 2. Initialize the service with the angular application 
+			loggerService(app);
+
+			// 3. create a new controller that will require the logger as a dependancy
+			app.controller("MyController",function($scope, logger) { 
+				logger.log("Message #2 From Client").then(function() {
+					console.log("Message recieved by the server!!");
+				});
+			});
+
+			// NOTE: the logger object ( Sans angular ) and the logger service will be seperate applications
+		</script>
 	</body>
-	<script>
-		logger.log("Message From client!");
-	</script>
+	
 </html>
